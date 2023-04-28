@@ -1,10 +1,9 @@
-name: NPM Package
+name: Release and Publish
 
-on:
-  release:
-    types: [published]
+on: [push]
 
 jobs:
+  
   build:
     runs-on: ubuntu-latest
     steps:
@@ -17,13 +16,58 @@ jobs:
       - name: Run tests
         run: npm test
 
-  publish-npmjs:
+  release:
     needs: build
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      BRANCH: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Version bump
+        id: version
+        uses: phips28/gh-action-bump-version@v9.1.0
+        with:
+          major-wording: ${{ env.BRANCH == 'main' && '[bump major]' || '[bump major --force]' }}
+          minor-wording: ${{ env.BRANCH == 'main' && '[bump minor]' || '[bump minor --force]' }}
+          patch-wording: ${{ null }}
+          rc-wording: ${{ null }}
+          default: "${{ env.BRANCH == 'main' && 'patch' || 'prerelease' }}"
+          preid: "${{ env.BRANCH }}"
+          skip-tag: "true"
+          skip-push: "true"
+          skip-commit: "true"
+          bump-policy: "ignore"
+          commit-message: "CI: bumps @fundwave/oidc-client to {{version}}"
+
+      - name: Release
+        run: |
+          PACKAGE_VERSION=$(cat ./package.json | jq '.version' | tr -d '"')
+          if [ "${BRANCH}" != "main" ]; then PRERELEASE="-p"; fi
+          echo "Releasing version ${PACKAGE_VERSION} on branch ${BRANCH}"
+          gh release create ${PACKAGE_VERSION} --target ${BRANCH} --generate-notes ${PRERELEASE}
+
+      - name: Commit changes
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git commit -a -m "CI: bumps fundwave/oidc-client to {{version}}"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+
+  publish-npmjs:
+    needs: release
     runs-on: ubuntu-latest
     env:
       BRANCH_TAG: "${{ github.ref_name == 'main' && 'latest' || github.ref_name }}"
     steps:
       - uses: actions/checkout@v3
+      - run: git pull origin ${{ github.ref }}
       - uses: actions/setup-node@v3
         with:
           node-version: 16
@@ -36,15 +80,13 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPMJS_TOKEN}}
 
   publish-gitlab:
-    needs: build
+    needs: release
     runs-on: ubuntu-latest
     env:
       BRANCH_TAG: "${{ github.ref_name == 'main' && 'latest' || github.ref_name }}"
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
+      - run: git pull origin ${{ github.ref }}
       - name: Setup .npmrc file for publish
         run: |
           echo @fundwave:registry=https://gitlab.com/api/v4/projects/24877554/packages/npm/ >> ~/.npmrc
