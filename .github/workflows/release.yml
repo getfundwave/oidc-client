@@ -1,0 +1,39 @@
+name: Bump and Release
+
+on: [push]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      BRANCH: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Version bump
+        uses: phips28/gh-action-bump-version@v9.1.0
+        with:
+          major-wording: "${{ env.BRANCH == 'main' && '[bump major]' || '' }}"
+          minor-wording: "${{ env.BRANCH == 'main' && '[bump minor]' || '' }}"
+          patch-wording: ""
+          rc-wording: ""
+          default: "${{ env.BRANCH == 'main' && 'patch' || 'prerelease' }}"
+          preid: "${{ env.BRANCH }}"
+          skip-tag: "true"
+          skip-push: "true"
+          bump-policy: "ignore"
+          commit-message: "CI: bumps @fundwave/oidc-client to {{version}}"
+
+      - name: Release
+        run: |
+          PACKAGE_VERSION=$(cat ./package.json | jq '.version' | tr -d '"')
+          if [ "${BRANCH}" != "main" ]; then PRERELEASE="-p"; fi
+          echo "Releasing version ${PACKAGE_VERSION} on branch ${BRANCH}"
+          gh release create ${PACKAGE_VERSION} --target ${BRANCH} --generate-notes ${PRERELEASE}
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
