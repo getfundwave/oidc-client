@@ -19,6 +19,8 @@ jobs:
         with:
           major-wording: ${{ env.BRANCH == 'main' && '[bump major]' || '[bump major --force]' }}
           minor-wording: ${{ env.BRANCH == 'main' && '[bump minor]' || '[bump minor --force]' }}
+          patch-wording: ${{ null }}
+          rc-wording: ${{ null }}
           default: "${{ env.BRANCH == 'main' && 'patch' || 'prerelease' }}"
           preid: "${{ env.BRANCH }}"
           skip-tag: "true"
