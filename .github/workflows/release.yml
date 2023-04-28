@@ -13,9 +13,6 @@ jobs:
 
       - name: Version bump
         uses: phips28/gh-action-bump-version@v9.1.0
-        env:
-          GITHUB_ACTOR: "github-actions[bot]"
-          GITHUB_EMAIL: "oidc-client@noreply.github.com"
         with:
           major-wording: ${{ env.BRANCH == 'main' && '[bump major]' || '[bump major --force]' }}
           minor-wording: ${{ env.BRANCH == 'main' && '[bump minor]' || '[bump minor --force]' }}
@@ -25,6 +22,7 @@ jobs:
           preid: "${{ env.BRANCH }}"
           skip-tag: "true"
           skip-push: "true"
+          skip-commit: "true"
           bump-policy: "ignore"
           commit-message: "CI: bumps @fundwave/oidc-client to {{version}}"
 
@@ -34,6 +32,12 @@ jobs:
           if [ "${BRANCH}" != "main" ]; then PRERELEASE="-p"; fi
           echo "Releasing version ${PACKAGE_VERSION} on branch ${BRANCH}"
           gh release create ${PACKAGE_VERSION} --target ${BRANCH} --generate-notes ${PRERELEASE}
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "oidc-client+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -a -m "Add changes"
 
       - name: Push changes
         uses: ad-m/github-push-action@master
