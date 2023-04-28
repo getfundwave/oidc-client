@@ -1,0 +1,19 @@
+{
+  "name": "oidc-client",
+  "version": "0.0.0",
+  "description": "JS client for making server calls for an OIDC flow",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/getfundwave/oidc-client.git"
+  },
+  "author": "The Fundwave Authors",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/getfundwave/oidc-client/issues"
+  },
+  "homepage": "https://github.com/getfundwave/oidc-client#readme"
+}
