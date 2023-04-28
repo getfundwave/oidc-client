@@ -2,6 +2,11 @@ name: Release and Publish
 
 on: [push]
 
+env:
+  BRANCH_TAG: "${{ github.ref_name == 'main' && 'latest' || github.ref_name }}"
+  BRANCH: ${{ github.ref_name }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,9 +23,6 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      BRANCH: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v3
 
@@ -58,14 +60,13 @@ jobs:
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ env.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
 
   publish-npmjs:
     needs: release
+    environment: prod
     runs-on: ubuntu-latest
-    env:
-      BRANCH_TAG: "${{ github.ref_name == 'main' && 'latest' || github.ref_name }}"
     steps:
       - uses: actions/checkout@v3
       - run: git pull origin ${{ github.ref }}
@@ -82,14 +83,14 @@ jobs:
 
   publish-gitlab:
     needs: release
+    environment: prod
     runs-on: ubuntu-latest
-    env:
-      BRANCH_TAG: "${{ github.ref_name == 'main' && 'latest' || github.ref_name }}"
-      GITLAB_TOKEN: ${{secrets.GITLAB_TOKEN}}
     steps:
       - uses: actions/checkout@v3
       - run: git pull origin ${{ github.ref }}
       - name: Setup .npmrc file for publish
+        env:
+          GITLAB_TOKEN: ${{secrets.GITLAB_TOKEN}}
         run: |
           echo @fundwave:registry=https://gitlab.com/api/v4/projects/24877554/packages/npm/ >> ~/.npmrc
           echo //gitlab.com/api/v4/projects/24877554/packages/npm/:_authToken=$GITLAB_TOKEN >> ~/.npmrc
