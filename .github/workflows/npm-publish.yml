@@ -3,7 +3,6 @@ name: Release and Publish
 on: [push]
 
 jobs:
-  
   build:
     runs-on: ubuntu-latest
     steps:
@@ -39,20 +38,22 @@ jobs:
           skip-push: "true"
           skip-commit: "true"
           bump-policy: "ignore"
-          commit-message: "CI: bumps @fundwave/oidc-client to {{version}}"
 
       - name: Release
+        env:
+          VERSION: ${{ steps.version.outputs.newTag }}
         run: |
-          PACKAGE_VERSION=$(cat ./package.json | jq '.version' | tr -d '"')
           if [ "${BRANCH}" != "main" ]; then PRERELEASE="-p"; fi
-          echo "Releasing version ${PACKAGE_VERSION} on branch ${BRANCH}"
-          gh release create ${PACKAGE_VERSION} --target ${BRANCH} --generate-notes ${PRERELEASE}
+          echo "Releasing version ${VERSION} on branch ${BRANCH}"
+          gh release create ${VERSION} --target ${BRANCH} --generate-notes ${PRERELEASE}
 
       - name: Commit changes
+        env:
+          VERSION: ${{ steps.version.outputs.newTag }}
         run: |
           git config user.name github-actions[bot]
           git config user.email github-actions[bot]@users.noreply.github.com
-          git commit -a -m "CI: bumps fundwave/oidc-client to {{version}}"
+          git commit -a -m "CI: bumps fundwave/oidc-client to $VERSION"
 
       - name: Push changes
         uses: ad-m/github-push-action@master
