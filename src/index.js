@@ -57,7 +57,7 @@ export class OIDCClient {
     try {
       let count = 0;
       while (this.refreshTokenLock && count < 15) {
-        await this._wait(count > 0 ? 200 * count : undefined); //delays the next check of refreshTokenLock
+        await this._wait((count > 0) ? (200 * count) : undefined); //delays the next check of refreshTokenLock
         count += 1;
       }
 
