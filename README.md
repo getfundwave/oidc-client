@@ -1,8 +1,6 @@
 ## OIDC Client
 
----
-
-@fundwave/oidc-client is a client-side library that allows you to prepare headers for your network-calls by automatically refreshing tokens (if expired) at the provided connection-url. It then parses the response and updates the tokens.
+@fundwave/oidc-client is a lightweight client-side library that allows you to prepare headers for your network-calls by automatically refreshing tokens (if expired) with the provided OIDC server.
 
 ### Installation
 
@@ -16,19 +14,14 @@ npm install @fundwave/oidc-client
 import { OIDCClient } from "@fundwave/oidc-client";
 
 const oidcClient = new OIDCClient();
+
+// Set the URL-String where token refresh requests will be sent
+oidcClient.setBaseUrl("https://my-awesome-oidc-server.com");
+
+// Set the path on the server which is responsible for the refresh
+oidcClient.setRefreshPath("refresh-token");
+
 ```
-
-- Set the URL-String where token-refresh requests will be sent
-
-  ```js
-  oidcClient.setBaseUrl("https://testing-placeholder.com");
-  ```
-
-- Set the path on the server which is responsible for the refresh
-
-  ```js
-  oidcClient.setRefreshPath("refresh-token");
-  ```
 
   > Note: the `refreshPath` property defaults to **token/refresh**
 
@@ -42,19 +35,22 @@ Once the class has been instantiated, you can
   const headers = await oidcClient.prepareHeaders();
   ```
 
-- use the `getAccessToken` method to update the tokens (access and refresh) at browser's storage
+- Optionally, directly use the `getAccessToken` method to update the tokens (access and refresh) at browser's storage
 
   ```js
   await oidcClient.getAccessToken();
   ```
 
-- If the refresh-token call returns a `403` status (Unauthorized), the library would throw an custom-event `logged-out`
+- If the refresh-token call returns a `401`/`403` or any other error status, the library will throw an custom-event `logged-out`
 
-### Note:
+### Notes:
 
-- Tokens aren't refreshed every-time the `prepareHeaders` method is called. The library sets up a timeout which later triggers an update when the token is about to expire.
+- Tokens aren't refreshed every time the `prepareHeaders` method is called. Tokens are only refreshed when the token is about to expire.
 
-- **Access Token** is maintained at browser's _session-storage_ with the key being `token`
-- **Refresh Token** is maintained at browser's _local-storage_ with the key being `refreshToken`
+- If your client app makes parallel calls to the same object of oidc-client, this library will still make only one active call to your OIDC server. This will reduce network calls and avoid exceeding any rate limits with your OIDC server.
 
-- The library allows for the server to send the tokens back in either the response **body** or **headers**
+- **Access Token** is maintained at browser's _session storage_ with the key being `token`
+
+- **Refresh Token** is maintained at browser's _local storage_ with the key being `refreshToken`
+
+- The library will read tokens sent by your OIDC server from either the response **body** or **headers**
