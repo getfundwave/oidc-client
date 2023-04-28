@@ -13,11 +13,12 @@ jobs:
 
       - name: Version bump
         uses: phips28/gh-action-bump-version@v9.1.0
+        env:
+          GITHUB_ACTOR: "github-actions[bot]"
+          GITHUB_EMAIL: "oidc-client@noreply.github.com"
         with:
-          major-wording: ${{ env.BRANCH == 'main' && '[bump major]' || null }}
-          minor-wording: ${{ env.BRANCH == 'main' && '[bump minor]' || null }}
-          patch-wording: ${{ null }}
-          rc-wording: ${{ null }}
+          major-wording: ${{ env.BRANCH == 'main' && '[bump major]' || '[bump major --force]' }}
+          minor-wording: ${{ env.BRANCH == 'main' && '[bump minor]' || '[bump minor --force]' }}
           default: "${{ env.BRANCH == 'main' && 'patch' || 'prerelease' }}"
           preid: "${{ env.BRANCH }}"
           skip-tag: "true"
