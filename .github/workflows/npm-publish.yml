@@ -77,7 +77,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Publish package
-        run: npm publish --tag $BRANCH_TAG
+        run: npm publish --tag $BRANCH_TAG --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPMJS_TOKEN}}
 
