@@ -1,0 +1,35 @@
+{
+  "name": "@fundwave/oidc-client",
+  "version": "1.0.1-init.0",
+  "description": "JS client for making server calls for an OIDC flow",
+  "license": "MIT",
+  "author": "The Fundwave Authors",
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "npx eslint src/index.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "jwt-decode": "^3.1.2"
+  },
+  "files": [
+    "src/index.js"
+  ],
+  "devDependencies": {
+    "@getify/eslint-plugin-proper-ternary": "^3.1.1",
+    "esbuild": "^0.17.18",
+    "esbuild-jest": "^0.5.0",
+    "eslint": "^8.37.0",
+    "eslint-plugin-ternary": "^2.0.0",
+    "jest": "^29.5.0",
+    "jsonwebtoken": "^9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/getfundwave/oidc-client.git"
+  },
+  "bugs": {
+    "url": "https://github.com/getfundwave/oidc-client/issues"
+  },
+  "homepage": "https://github.com/getfundwave/oidc-client#readme"
+}
