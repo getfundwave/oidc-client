@@ -1,0 +1,28 @@
+{
+  "name": "@fundwave/oidc-client",
+  "version": "2.0.0",
+  "description": "Procures OpenIDConnect tokens from any server that follows the OIDC protocol",
+  "main": "src/index.js",
+  "author": "The Fundwave Authors",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "jwt-decode": "^3.1.2"
+  },
+  "files": [
+    "src/index.js"
+  ],
+  "devDependencies": {
+    "@getify/eslint-plugin-proper-ternary": "^3.1.1",
+    "esbuild": "^0.17.18",
+    "esbuild-jest": "^0.5.0",
+    "eslint": "^8.37.0",
+    "eslint-plugin-ternary": "^2.0.0",
+    "jest": "^29.5.0",
+    "jsonwebtoken": "^9.0.0"
+  },
+  "scripts": {
+    "lint": "npx eslint src/index.js",
+    "test": "jest",
+    "prepublishOnly": "npm run lint && npm run test"
+  }
+}

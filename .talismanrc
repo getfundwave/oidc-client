@@ -1,0 +1,4 @@
+threshold: medium
+scopeconfig:
+- scope: node
+version: "1.0"
