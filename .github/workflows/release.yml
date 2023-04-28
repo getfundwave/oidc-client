@@ -14,8 +14,8 @@ jobs:
       - name: Version bump
         uses: phips28/gh-action-bump-version@v9.1.0
         with:
-          major-wording: "${{ env.BRANCH == 'main' && '[bump major]' || '' }}"
-          minor-wording: "${{ env.BRANCH == 'main' && '[bump minor]' || '' }}"
+          major-wording: ${{ env.BRANCH == 'main' && '[bump major]' || '' }}
+          minor-wording: ${{ env.BRANCH == 'main' && '[bump minor]' || '' }}
           patch-wording: ""
           rc-wording: ""
           default: "${{ env.BRANCH == 'main' && 'patch' || 'prerelease' }}"
