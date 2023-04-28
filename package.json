@@ -1,6 +1,6 @@
 {
   "name": "oidc-client",
-  "version": "1.0.1-actions-publish.1",
+  "version": "1.0.1-actions-publish.2",
   "description": "JS client for making server calls for an OIDC flow",
   "main": "index.js",
   "scripts": {
