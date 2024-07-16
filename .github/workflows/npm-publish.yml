@@ -26,7 +26,21 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Generate token
+        if: ${{ github.ref_name == 'main' }}
+        id: generate_token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ vars.FUNDABOT_APP_ID }}
+          private_key: ${{ secrets.FUNDABOT_PRIVATE_KEY }}
+
       - uses: actions/checkout@v3
+        if: ${{ github.ref_name == 'main' }}
+        with:
+          token: ${{ steps.generate_token.outputs.token }}
+
+      - uses: actions/checkout@v3
+        if: ${{ github.ref_name != 'main' }}
 
       - name: Version bump
         id: version
@@ -55,15 +69,14 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.newTag }}
         run: |
-          git config user.name github-actions[bot]
-          git config user.email github-actions[bot]@users.noreply.github.com
-          git commit -a -m "CI: bumps fundwave/oidc-client to $VERSION"
+          git config user.email "fundabot@fundwave.com"
+          git config user.name "fundabot"
+          git add package.json package-lock.json
+          git commit -m "CI: bumps ui-utils version to $VERSION" -m "[skip ci]"
+          git tag "v$VERSION" HEAD -m "CI: bumps version to $VERSION"
 
       - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ env.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+        run: git push --follow-tags --atomic --no-verify
 
   publish-npmjs:
     needs: release
