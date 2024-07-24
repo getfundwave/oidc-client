@@ -23,6 +23,7 @@ jobs:
         run: npm run test
 
   release:
+    environment: ${{ github.ref_name == 'main' && 'Prod' || '' }}
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -66,16 +67,17 @@ jobs:
           gh release create ${VERSION} --target ${BRANCH} --generate-notes ${PRERELEASE}
 
       - name: Commit changes
+        if: always()
         env:
           VERSION: ${{ steps.version.outputs.newTag }}
         run: |
           git config user.email "fundabot@fundwave.com"
           git config user.name "fundabot"
-          git add package.json package-lock.json
-          git commit -m "CI: bumps ui-utils version to $VERSION" -m "[skip ci]"
+          git commit -am "CI: bumps oidc-client version to $VERSION" -m "[skip ci]"
           git tag "v$VERSION" HEAD -m "CI: bumps version to $VERSION"
 
       - name: Push changes
+        if: always()
         run: git push --follow-tags --atomic --no-verify
 
   publish-npmjs:
