@@ -40,13 +40,13 @@ export class OIDCClient {
     this.refreshTokenLock = false;
   }
 
-  async prepareHeaders(HEADERS) {
-    if (!HEADERS) HEADERS = this.BASE_HEADERS;
+  async prepareHeaders(headers) {
+    if (!headers) headers = this.BASE_HEADERS;
 
     const token = await this.getAccessToken();
 
-    if (token) return { ...HEADERS, Authorization: `Bearer ${token}` };
-    else return HEADERS;
+    if (token) return { ...headers, Authorization: `Bearer ${token}` };
+    return headers;
   }
 
   async getAccessToken() {
@@ -92,11 +92,9 @@ export class OIDCClient {
   }
 
   async _refreshToken() {
-    const headers = { ...this.BASE_HEADERS };
-
-    const refreshToken = localStorage.getItem("refreshToken");
-
     const token = sessionStorage.getItem("token");
+    const refreshToken = localStorage.getItem("refreshToken");
+    const headers = { ...this.BASE_HEADERS };
 
     if (!refreshToken) throw "No refresh token";
 
@@ -105,31 +103,26 @@ export class OIDCClient {
     if (token) headers["Authorization"] = `Bearer ${token}`;
     headers["Refresh-Token"] = refreshToken;
 
-    let base = this.getBaseUrl();
+    const base = this.getBaseUrl();
     if (!base) throw new Error("Missing `baseUrl` argument for OIDCClient");
-    if (!base.endsWith("/")) base = `${base}/`;
 
-    let refreshPath = this.getRefreshPath();
-    if (refreshPath.startsWith("/")) refreshPath = refreshPath.slice(1);
-
-    const serviceUrl = `${base}${refreshPath}`;
+    const refreshPath = this.getRefreshPath();
+    const serviceUrl = base.replace(/\/?$/, "/").concat(refreshPath.replace(/^\/?/, ""));
 
     return fetch(serviceUrl, { method: "GET", headers: headers })
       .then(async (response) => {
-        if (response.status === 403) {
-          throw 403;
-        } else {
-          const data = await response.json();
-          const token = data?.["token"] || response.headers.get("token");
-          const refreshToken = data?.["refreshToken"] || response.headers.get("refreshToken");
+        if (response.status === 403) throw 403;
 
-          if (!token && !refreshToken) throw new Error("Couldn't fetch `access-token` or `refresh-token`");
-          if (token) sessionStorage.setItem("token", token);
-          if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
-        }
+        const data = await response.json();
+        const token = data?.["token"] || response.headers.get("token");
+        const refreshToken = data?.["refreshToken"] || response.headers.get("refreshToken");
+
+        if (!token && !refreshToken) throw new Error("Couldn't fetch `access-token` or `refresh-token`");
+        if (token) sessionStorage.setItem("token", token);
+        if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
       })
       .catch((err) => {
-        console.log(err);
+        console.log("Failed to refresh tokens", err);
         throw err;
       })
       .finally(() => {
