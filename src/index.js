@@ -1,6 +1,8 @@
 import jwt_decode from "jwt-decode";
 
 export class OIDCClient {
+  refreshTokenPromise;
+
   constructor(options) {
     this.refreshTokenLock = false;
     this.refreshPath = options?.refreshPath || "token/refresh";
@@ -55,13 +57,13 @@ export class OIDCClient {
       return;
 
     try {
-      let count = 0;
-      while (this.refreshTokenLock && count < 15) {
-        await this._wait((count > 0) ? (200 * count) : undefined); //delays the next check of refreshTokenLock
-        count += 1;
+      for (let count = 0; this.refreshTokenLock && count < 15; count++) {
+        if (this.refreshTokenPromise) continue;
+        await this._wait((count) ? (200 * count) : undefined); //delays the next check of refreshTokenLock
       }
 
-      if (!this.verifyTokenValidity()) await this._refreshToken();
+      if (this.refreshTokenPromise) await this.refreshTokenPromise;
+      else if (!this.verifyTokenValidity()) await this._refreshToken();
     } catch (err) {
       console.log(err);
       sessionStorage.removeItem("token");
@@ -109,7 +111,7 @@ export class OIDCClient {
     const refreshPath = this.getRefreshPath();
     const serviceUrl = base.replace(/\/?$/, "/").concat(refreshPath.replace(/^\/?/, ""));
 
-    return fetch(serviceUrl, { method: "GET", headers: headers })
+    this.refreshTokenPromise = fetch(serviceUrl, { method: "GET", headers: headers })
       .then(async (response) => {
         if (response.status === 403) throw 403;
 
@@ -127,6 +129,9 @@ export class OIDCClient {
       })
       .finally(() => {
         this.releaseRefreshTokenLock();
+        this.refreshTokenPromise = null;
       });
+
+    return this.refreshTokenPromise;
   }
 }
