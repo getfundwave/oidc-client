@@ -1,6 +1,6 @@
 {
   "name": "@fundwave/oidc-client",
-  "version": "2.0.2-chore-bump.1",
+  "version": "2.0.2",
   "description": "Client for managing tokens for API Calls",
   "license": "MIT",
   "author": "The Fundwave Authors",
