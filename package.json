@@ -1,6 +1,6 @@
 {
   "name": "@fundwave/oidc-client",
-  "version": "2.0.1-retain-refresh-promise-reference.2",
+  "version": "2.0.1-chore-bump.0",
   "description": "Client for managing tokens for API Calls",
   "license": "MIT",
   "author": "The Fundwave Authors",
