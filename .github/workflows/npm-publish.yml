@@ -82,7 +82,7 @@ jobs:
 
   publish-npmjs:
     needs: release
-    environment: prod
+    environment: ${{ github.ref_name == 'main' && 'prod' || '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -100,7 +100,7 @@ jobs:
 
   publish-gitlab:
     needs: release
-    environment: prod
+    environment: ${{ github.ref_name == 'main' && 'prod' || '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
