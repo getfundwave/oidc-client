@@ -67,7 +67,6 @@ jobs:
           gh release create ${VERSION} --target ${BRANCH} --generate-notes ${PRERELEASE}
 
       - name: Commit changes
-        if: always()
         env:
           VERSION: ${{ steps.version.outputs.newTag }}
         run: |
@@ -77,7 +76,6 @@ jobs:
           git tag "v$VERSION" HEAD -m "CI: bumps version to $VERSION"
 
       - name: Push changes
-        if: always()
         run: git push --follow-tags --atomic --no-verify
 
   publish-npmjs:
