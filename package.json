@@ -1,6 +1,6 @@
 {
   "name": "@fundwave/oidc-client",
-  "version": "2.0.0",
+  "version": "2.0.1-retain-refresh-promise-reference.2",
   "description": "JS client for making server calls for an OIDC flow",
   "license": "MIT",
   "author": "The Fundwave Authors",
