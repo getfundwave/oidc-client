@@ -1,22 +1,22 @@
 import { OIDCClient as Client } from "../src";
 import { LocalStorageMock } from "./mocks";
-const jwt = require("jsonwebtoken");
+import * as jwt from "jsonwebtoken";
 
 const FW_THRESHOLD = 10000; // 10s
 // https://www.rfc-editor.org/rfc/rfc7519#section-4.1.4
-const timeWithOffsetFromThreshold = (offset) => (Date.now() + (FW_THRESHOLD + offset * 1000)) / 1000;
+const timeWithOffsetFromThreshold = (offset: number): number => (Date.now() + (FW_THRESHOLD + offset * 1000)) / 1000;
 
-function setupStorageMocks() {
-  global.sessionStorage = new LocalStorageMock();
-  global.localStorage = new LocalStorageMock();
+function setupStorageMocks(): void {
+  (global as any).sessionStorage = new LocalStorageMock();
+  (global as any).localStorage = new LocalStorageMock();
 }
 
-function clearStorageMocks() {
+function clearStorageMocks(): void {
   sessionStorage.clear();
   localStorage.clear();
 }
 
-function prepareToken(type) {
+function prepareToken(type: 'valid' | 'invalid'): { token: string; expiryTime: number } {
   const threshold = type === "invalid" ? -5 : 5;
   const expiryTime = timeWithOffsetFromThreshold(threshold);
   const token = jwt.sign({ exp: expiryTime }, "secret");
@@ -27,7 +27,7 @@ function prepareToken(type) {
   return { token, expiryTime };
 }
 
-let OIDCClient;
+let OIDCClient: Client;
 
 beforeAll(() => {
   setupStorageMocks();
@@ -92,7 +92,7 @@ test("Prepare headers with invalid token", async () => {
   };
   const validToken = jwt.sign({ exp: expiryTime }, "secret");
 
-  global.fetch = jest.fn(() =>
+  (global as any).fetch = jest.fn(() =>
     Promise.resolve({
       json: () => Promise.resolve({ token: validToken, refreshToken: validToken }),
     })
@@ -114,7 +114,7 @@ test("Path used to refresh token", async () => {
   const validToken = jwt.sign({ exp: expiryTime }, "secret");
   let suppliedRefreshPath = "";
 
-  global.fetch = jest.fn((url) => {
+  (global as any).fetch = jest.fn((url: string) => {
     suppliedRefreshPath = url;
     return Promise.resolve({
       json: () => Promise.resolve({ token: validToken, refreshToken: validToken }),
@@ -136,7 +136,7 @@ test("Path used to refresh token (malformed refresh-path | leading '/')", async 
   const validToken = jwt.sign({ exp: expiryTime }, "secret");
   let suppliedRefreshPath = "";
 
-  global.fetch = jest.fn((url) => {
+  (global as any).fetch = jest.fn((url: string) => {
     suppliedRefreshPath = url;
     return Promise.resolve({
       json: () => Promise.resolve({ token: validToken, refreshToken: validToken }),
@@ -159,7 +159,7 @@ test("Refresh Token URL (w/ malformed base-url | trailing '/')", async () => {
   const validToken = jwt.sign({ exp: expiryTime }, "secret");
   let suppliedRefreshPath = "";
 
-  global.fetch = jest.fn((url) => {
+  (global as any).fetch = jest.fn((url: string) => {
     suppliedRefreshPath = url;
     return Promise.resolve({
       json: () => Promise.resolve({ token: validToken, refreshToken: validToken }),
