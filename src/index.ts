@@ -114,7 +114,7 @@ export class OIDCClient {
     const refreshToken = localStorage.getItem("refreshToken");
     const headers: Record<string, string> = { ...this.BASE_HEADERS };
 
-    if (!refreshToken) throw "No refresh token";
+    if (!refreshToken) throw new Error("No refresh token");
 
     this.lockRefreshTokenLock();
 
