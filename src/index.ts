@@ -1,9 +1,24 @@
 import jwt_decode from "jwt-decode";
 
-export class OIDCClient {
-  #refreshTokenPromise;
+interface OIDCClientOptions {
+  refreshPath?: string;
+  baseUrl?: string;
+  headers?: Record<string, string>;
+}
 
-  constructor(options) {
+interface TokenResponse {
+  token?: string;
+  refreshToken?: string;
+}
+
+export class OIDCClient {
+  #refreshTokenPromise: Promise<void> | null;
+  private refreshTokenLock: boolean;
+  private refreshPath: string;
+  private baseUrl: string | undefined;
+  private BASE_HEADERS: Record<string, string>;
+
+  constructor(options?: OIDCClientOptions) {
     this.refreshTokenLock = false;
     this.refreshPath = options?.refreshPath || "token/refresh";
     this.baseUrl = options?.baseUrl;
@@ -11,38 +26,39 @@ export class OIDCClient {
       "Content-Type": "application/json; charset=UTF-8",
       Accept: "application/json, text/javascript, */*; q=0.01",
     };
+    this.#refreshTokenPromise = null;
   }
 
-  setBaseUrl(url) {
+  setBaseUrl(url: string): void {
     this.baseUrl = url;
   }
 
-  getBaseUrl() {
+  getBaseUrl(): string | undefined {
     return this.baseUrl;
   }
 
-  setRefreshPath(path) {
+  setRefreshPath(path: string): void {
     if (path.startsWith("/")) path = path.slice(1);
     this.refreshPath = path;
   }
 
-  getRefreshPath() {
+  getRefreshPath(): string {
     return this.refreshPath;
   }
 
-  getBaseHeaders() {
+  getBaseHeaders(): Record<string, string> {
     return this.BASE_HEADERS;
   }
 
-  lockRefreshTokenLock() {
+  lockRefreshTokenLock(): void {
     this.refreshTokenLock = true;
   }
 
-  releaseRefreshTokenLock() {
+  releaseRefreshTokenLock(): void {
     this.refreshTokenLock = false;
   }
 
-  async prepareHeaders(headers) {
+  async prepareHeaders(headers?: Record<string, string>): Promise<Record<string, string>> {
     if (!headers) headers = this.BASE_HEADERS;
 
     const token = await this.getAccessToken();
@@ -51,7 +67,7 @@ export class OIDCClient {
     return headers;
   }
 
-  async getAccessToken() {
+  async getAccessToken(): Promise<string | undefined> {
     if (typeof localStorage === "undefined" || !localStorage.getItem("refreshToken"))
       // Either we're in a non-browser environment, or session security is used
       return;
@@ -71,10 +87,10 @@ export class OIDCClient {
       document.dispatchEvent(new CustomEvent("logged-out", { bubbles: true, composed: true }));
     }
 
-    return sessionStorage.getItem("token");
+    return sessionStorage.getItem("token") || undefined;
   }
 
-  async _wait(time = 1200) {
+  async _wait(time = 1200): Promise<void> {
     return new Promise((resolve) => {
       setTimeout(function () {
         resolve();
@@ -82,23 +98,23 @@ export class OIDCClient {
     });
   }
 
-  verifyTokenValidity() {
+  verifyTokenValidity(): boolean {
     const token = sessionStorage.getItem("token");
     if (!token) return false;
     try {
-      const exp = jwt_decode(token);
+      const exp = jwt_decode<{ exp: number }>(token);
       return exp && exp.exp >= (new Date().getTime() + 10000) / 1000;
     } catch (err) {
       return false;
     }
   }
 
-  async _refreshToken() {
+  async _refreshToken(): Promise<void> {
     const token = sessionStorage.getItem("token");
     const refreshToken = localStorage.getItem("refreshToken");
-    const headers = { ...this.BASE_HEADERS };
+    const headers: Record<string, string> = { ...this.BASE_HEADERS };
 
-    if (!refreshToken) throw "No refresh token";
+    if (!refreshToken) throw new Error("No refresh token");
 
     this.lockRefreshTokenLock();
 
@@ -115,7 +131,7 @@ export class OIDCClient {
       .then(async (response) => {
         if (response.status === 403) throw 403;
 
-        const data = await response.json();
+        const data = await response.json() as TokenResponse;
         const token = data?.["token"] || response.headers.get("token");
         const refreshToken = data?.["refreshToken"] || response.headers.get("refreshToken");
 

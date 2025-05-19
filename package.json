@@ -1,12 +1,15 @@
 {
   "name": "@fundwave/oidc-client",
-  "version": "2.0.2",
+  "version": "2.0.3-ts.0",
   "description": "Client for managing tokens for API Calls",
   "license": "MIT",
   "author": "The Fundwave Authors",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "lint": "npx eslint src/index.js",
+    "prebuild": "npm run lint && npm run test",
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "lint": "npx eslint src/index.ts",
     "test": "jest"
   },
   "dependencies": {
@@ -16,13 +19,18 @@
     "src/index.js"
   ],
   "devDependencies": {
+    "@eslint/js": "^9.27.0",
     "@getify/eslint-plugin-proper-ternary": "^3.1.1",
-    "esbuild": "^0.17.18",
-    "esbuild-jest": "^0.5.0",
-    "eslint": "^8.37.0",
+    "@types/jest": "^29.5.14",
+    "esbuild": "^0.25.4",
+    "eslint": "^8.57.1",
     "eslint-plugin-ternary": "^2.0.0",
     "jest": "^29.5.0",
-    "jsonwebtoken": "^9.0.0"
+    "jsonwebtoken": "^9.0.0",
+    "ts-jest": "^29.3.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.32.1"
   },
   "repository": {
     "type": "git",
