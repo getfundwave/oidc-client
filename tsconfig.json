@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "noImplicitAny": false,
+        "module": "esnext",
+        "target": "esnext",
+        "allowJs": true,
+        "moduleResolution": "node",
+        "downlevelIteration": true,
+        "outDir": "dist",
+        "esModuleInterop": true,
+        "declaration": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "noEmitOnError": true
+    },
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules", "dist"]
+}
